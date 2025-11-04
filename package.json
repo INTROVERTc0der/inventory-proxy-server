@@ -1,8 +1,15 @@
 {
   "name": "inventory-proxy-server",
   "version": "1.0.0",
+  "type": "module",
   "main": "proxy.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
+    "start": "node proxy.js",
+    "dev": "node --watch proxy.js",
+    "build": "echo 'No build step required for Node.js server'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -16,5 +23,10 @@
     "url": "https://github.com/INTROVERTc0der/inventory-proxy-server/issues"
   },
   "homepage": "https://github.com/INTROVERTc0der/inventory-proxy-server#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "xml2js": "^0.6.2"
+  }
 }
