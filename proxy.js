@@ -1,6 +1,12 @@
 import express from "express";
 import fetch from "node-fetch";
 import xml2js from "xml2js";
+import https from 'https';
+
+// Create a custom HTTPS agent that doesn't reject unauthorized certificates
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false
+});
 
 const app = express();
 
@@ -56,6 +62,7 @@ app.post("/api", async (req, res) => {
 
     console.log("🚀 Sending SOAP request...");
     const response = await fetch("https://br-api.silent-believers.com/soap-generic/syracuse/collaboration/syracuse/CAdxWebServiceXmlCC", {
+      agent: httpsAgent,
       method: "POST",
       headers: {
         "Content-Type": "text/xml; charset=utf-8",
