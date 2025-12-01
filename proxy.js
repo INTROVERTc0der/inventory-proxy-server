@@ -86,11 +86,15 @@ server.on('error', (error) => {
 export function getInventoryData(distributorId, skuId = null) {
   // Mock database of inventory
   const inventory = [
-    { distributor_id: 'DIST123', sku_id: 'SKU123', name: 'Product A', stock: 100, price: 29.99 },
-    { distributor_id: 'DIST123', sku_id: 'SKU124', name: 'Product B', stock: 50, price: 49.99 },
-    { distributor_id: 'DIST456', sku_id: 'SKU456', name: 'Product C', stock: 200, price: 19.99 },
-    { distributor_id: 'DIST456', sku_id: 'SKU457', name: 'Product D', stock: 75, price: 39.99 },
-    { distributor_id: 'DIST789', sku_id: 'SKU789', name: 'Product E', stock: 30, price: 89.99 },
+    { distributor_id: 'DIST123', sku_id: 'SKU123', quantity: 100 , uom:'EA2' },
+    { distributor_id: '100015', sku_id:'00342-40071-101', quantity: 34 , uom:'g'},
+    { distributor_id: '100015', sku_id:'598475931', quantity: 68 , uom:'kg'},
+    { distributor_id: '100015', sku_id:'11012', quantity: 68 , uom:'1 LTR'},
+    { distributor_id: '100015', sku_id:'100075', quantity: 23 , uom:'piece'},
+    { distributor_id: 'DIST123', sku_id: 'SKU124', quantity: 44 , uom:'packet' },
+    { distributor_id: 'DIST456', sku_id: 'SKU456', quantity: 200 , uom:'carton' },
+    { distributor_id: 'DIST456', sku_id: 'SKU457', quantity: 75 , uom:'box' },
+    { distributor_id: 'DIST789', sku_id: 'SKU789', quantity: 30 , uom:'piece' },
   ];
 
   // Filter by distributor_id
@@ -192,11 +196,28 @@ app.post("/test/basic-auth", basicAuth, (req, res) => {
   
   const data = getInventoryData(distributor_id, sku_id);
   
+  let responseData;
+  if (sku_id) {
+    responseData = data[0] ? {
+      distributor_id: data[0].distributor_id,
+      sku_id: data[0].sku_id,
+      quantity: data[0].quantity,
+      uom: data[0].uom
+    } : null;
+  } else {
+    responseData = data.map(item => ({
+      distributor_id: item.distributor_id,
+      sku_id: item.sku_id,
+      quantity: item.quantity,
+      uom: item.uom
+    }));
+  }
+
   const response = {
     success: true,
     message: `Basic Authentication successful - ${sku_id ? 'Single SKU' : 'All SKUs'}`,
     user: req.user.username, // Send back the authenticated username
-    data: sku_id ? (data[0] || null) : data,
+    data: responseData,
     count: data.length
   };
   
