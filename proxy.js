@@ -89,6 +89,7 @@ export function getInventoryData(distributorId, skuId = null) {
     { distributor_id: 'DIST123', sku_id: 'SKU123', quantity: 100 , uom:'EA2' },
     { distributor_id: '100015', sku_id:'00342-40071-101', quantity: 34 , uom:'g'},
     { distributor_id: '100015', sku_id:'598475931', quantity: 68 , uom:'kg'},
+    { distributor_id: '100015', sku_id:'30475', quantity: 89 , uom:'piece'},
     { distributor_id: '100015', sku_id:'11012', quantity: 68 , uom:'1 LTR'},
     { distributor_id: '100015', sku_id:'100075', quantity: 23 , uom:'piece'},
     { distributor_id: 'DIST123', sku_id: 'SKU124', quantity: 44 , uom:'packet' },
@@ -109,13 +110,13 @@ export function getInventoryData(distributorId, skuId = null) {
 };
 
 // Test endpoint - No Authentication
-app.post("/test/no-auth", (req, res) => {
-  const { distributor_id, sku_id } = req.body;
-  console.log("No Auth Credentials:", { distributor_id, sku_id });
+app.get("/test/no-auth", (req, res) => {
+  const { distributor_id, sku_id } = req.query;
+  console.log("No Auth Query Params:", { distributor_id, sku_id });
   if (!distributor_id) {
     return res.status(400).json({
       success: false,
-      message: "distributor_id is required"
+      message: "distributor_id is required as a query parameter"
     });
   }
   
@@ -182,15 +183,14 @@ const basicAuth = (req, res, next) => {
 };
 
 // Protected route with Basic Authentication
-app.post("/test/basic-auth", basicAuth, (req, res) => {
-  console.log("Basic Auth Request:", { user: req.user.username, body: req.body });
-  
-  const { distributor_id, sku_id } = req.body;
+app.get("/test/basic-auth", basicAuth, (req, res) => {
+  const { distributor_id, sku_id } = req.query;
+  console.log("Basic Auth Request:", { user: req.user.username, query: req.query });
   
   if (!distributor_id) {
     return res.status(400).json({
       success: false,
-      message: "distributor_id is required"
+      message: "distributor_id is required as a query parameter"
     });
   }
   
@@ -226,30 +226,29 @@ app.post("/test/basic-auth", basicAuth, (req, res) => {
 });
 
 // Test endpoint - Bearer Token
-app.post("/test/bearer-token", (req, res) => {
+app.get("/test/bearer-token", (req, res) => {
   const auth = req.headers.authorization;
-  const { distributor_id, sku_id } = req.body;
+  const { distributor_id, sku_id } = req.query;
   
-  console.log("Bearer Token Credentials:", { auth, distributor_id, sku_id });
+  console.log("Bearer Token Request:", { auth, query: req.query });
   
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
-      message: "Bearer token required"
+      message: "Bearer token required in Authorization header"
     });
   }
   
   if (!distributor_id) {
     return res.status(400).json({
       success: false,
-      message: "distributor_id is required"
+      message: "distributor_id is required as a query parameter"
     });
   }
   
   const token = auth.split(' ')[1];
   const data = getInventoryData(distributor_id, sku_id);
   
-  console.log("Bearer Token Response Data:", { distributor_id, sku_id, token, data });
   return res.json({
     success: true,
     message: `Bearer token accepted - ${sku_id ? 'Single SKU' : 'All SKUs'}`,
@@ -263,14 +262,14 @@ app.post("/test/bearer-token", (req, res) => {
 let testToken = 'valid_token_123';
 let refreshToken = 'refresh_token_456';
 
-app.post("/test/token-expiry", (req, res) => {
+app.get("/test/token-expiry", (req, res) => {
   const auth = req.headers.authorization;
-  const { distributor_id, sku_id } = req.body;
+  const { distributor_id, sku_id } = req.query;
   
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
-      message: "Token required"
+      message: "Token required in Authorization header"
     });
   }
   
@@ -288,7 +287,7 @@ app.post("/test/token-expiry", (req, res) => {
   if (!distributor_id) {
     return res.status(400).json({
       success: false,
-      message: "distributor_id is required"
+      message: "distributor_id is required as a query parameter"
     });
   }
   
@@ -303,8 +302,15 @@ app.post("/test/token-expiry", (req, res) => {
 });
 
 // Token Refresh Endpoint
-app.post("/test/refresh-token", (req, res) => {
-  const { refresh_token } = req.body;
+app.get("/test/refresh-token", (req, res) => {
+  const { refresh_token } = req.query;
+  
+  if (!refresh_token) {
+    return res.status(400).json({
+      success: false,
+      message: "refresh_token is required as a query parameter"
+    });
+  }
   
   if (refresh_token === refreshToken) {
     // In a real scenario, generate a new token and refresh token
